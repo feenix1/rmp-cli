@@ -162,13 +162,23 @@ def get_profs_at(school: School, name: str, ):
 
     return profs
 
+def print_help():
+    print("rmp - Rate My Professors CLI by Matthew Dinh")
+    print("Usage: rmp <command> [options]")
+    print("Commands:")
+    print("  config <school name>   Configure the school to search professors at")
+    print("  find <professor name>  Find a professor at the configured school")
+
 if __name__ == "__main__":
     pass
 
 args = sys.argv
 
 if len(args) <= 1:
-    print("Usage: rmp <command> [options]")
+    print_help()
+
+if len(args) >= 2 and args[1] == "help" or args[1] == "-?" or args[1] == "--help":
+    print_help()
 
 if len(args) >= 2 and args[1] == "config":
     if len(args) <= 2:
