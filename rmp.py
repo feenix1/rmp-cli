@@ -163,11 +163,18 @@ def get_profs_at(school: School, name: str, ):
     return profs
 
 def print_help():
-    print("rmp - Rate My Professors CLI by Matthew Dinh")
-    print("Usage: rmp <command> [options]")
+    print("\nrmp-cli - Rate My Professors CLI by Matthew Dinh\n")
+    print("Usage: rmp <command> [options]\n")
     print("Commands:")
     print("  config <school name>   Configure the school to search professors at")
     print("  find <professor name>  Find a professor at the configured school")
+    print("")
+    print("Options:")
+    print("  -w --web")
+    print("  Open the professor's Rate My Professors page in the web browser when using the find command\n")
+
+
+# Try to follow http://docopt.org/ standards
 
 if __name__ == "__main__":
     pass
@@ -176,8 +183,9 @@ args = sys.argv
 
 if len(args) <= 1:
     print_help()
+    exit()
 
-if len(args) >= 2 and args[1] == "help" or args[1] == "-?" or args[1] == "--help":
+if len(args) >= 2 and (args[1] == "help" or args[1] == "-?" or args[1] == "--help" or args[1] == "-h"):
     print_help()
 
 if len(args) >= 2 and args[1] == "config":
@@ -217,12 +225,25 @@ if len(args) >= 2 and args[1] == "find":
         exit()
 
     config_school = School.from_dict(load_data("school"))
-
     if (config_school is None):
         print("No school configured. Please set a school using 'rmp config <school name>'")
         exit()
 
-    prof_name = " ".join(args[2:])
+    option_open_in_web = False
+
+    if args[2].startswith("-"):
+        if args[2] == "-w" or args[2] == "--web":
+            if len(args) <= 3:
+                print("Usage: rmp find -w <professor name>")
+                exit()
+            prof_name = " ".join(args[3:])
+            option_open_in_web = True
+        else:
+            print(f"Unknown option '{args[2]}'")
+            exit()
+    else:
+        prof_name = " ".join(args[2:])
+    
     matching_profs = get_profs_at(config_school, prof_name)
 
     if len(matching_profs) == 0:
@@ -233,19 +254,16 @@ if len(args) >= 2 and args[1] == "find":
     for i, prof in enumerate(matching_profs):
         print(f"{i + 1}. {prof.name} (Quality: {prof.quality}, Ratings: {prof.rating_count})")
 
-    selection = input("Select to open in web browser: ")
-    try:
-        selection_index = int(selection) - 1
-        if selection_index < 0 or selection_index >= len(matching_profs):
+    if option_open_in_web:
+        selection = input("Select to open in web browser: ")
+        try:
+            selection_index = int(selection) - 1
+            if selection_index < 0 or selection_index >= len(matching_profs):
+                print("Invalid selection.")
+        except ValueError:
             print("Invalid selection.")
-            exit()
-    except ValueError:
-        print("Invalid selection.")
-        exit()
-
-    webbrowser.open(matching_profs[selection_index].url, new=2)
-
-if len(args) >= 2 and args[1] == "exit":
+        webbrowser.open(matching_profs[selection_index].url, new=2)
+    
     exit()
 
 
