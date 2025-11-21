@@ -66,10 +66,16 @@ class Professor():
     def __repr__(self):
         return f"Professor({self.name}, {self.url}, {self.department}, {self.school}, {self.quality}, {self.rating_count}, {self.take_again_percentage}, {self.difficulty})"
 
-
-def save_data(key, data):
+def create_empty_data_file_if_not_exists():
     if not os.path.exists(DATA_DIR):
         os.makedirs(DATA_DIR)
+
+    if not os.path.exists(DATA_PATH):
+        with open(DATA_PATH, "w+") as f:
+            f.write("{}")
+
+def save_data(key, data):
+    create_empty_data_file_if_not_exists()
 
     data_dict = {}
 
@@ -86,8 +92,8 @@ def save_data(key, data):
         
 
 def load_data(key):
-    if not os.path.exists(DATA_DIR):
-        os.makedirs(DATA_DIR)
+
+    create_empty_data_file_if_not_exists()
 
     with open(DATA_PATH, "r") as f:
         try:
@@ -100,8 +106,7 @@ def load_data(key):
 def delete_data(key):
     data_dict = {}
 
-    if not os.path.exists(DATA_DIR):
-        return
+    create_empty_data_file_if_not_exists()
 
     with open(DATA_PATH, "r") as f:
         try:
@@ -173,6 +178,11 @@ def print_help():
     print("  -w --web")
     print("  Open the professor's Rate My Professors page in the web browser when using the find command\n")
 
+def check_req_configured():
+    config_school = School.from_dict(load_data("school"))
+    if (config_school is None):
+        print("No school configured. Please set a school using 'rmp config <school name>'")
+        exit()
 
 # Try to follow http://docopt.org/ standards
 
@@ -182,6 +192,7 @@ if __name__ == "__main__":
 args = sys.argv
 
 if len(args) <= 1:
+    check_req_configured()
     print_help()
     exit()
 
@@ -224,10 +235,8 @@ if len(args) >= 2 and args[1] == "find":
         print("Usage: rmp find <professor name>")
         exit()
 
+    check_req_configured()
     config_school = School.from_dict(load_data("school"))
-    if (config_school is None):
-        print("No school configured. Please set a school using 'rmp config <school name>'")
-        exit()
 
     option_open_in_web = False
 
